@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <SDL.h>
-
+#include <SDL_image.h>
+#include <SDL_ttf.h>
 
 // Here lies the globals that used in our game.
 bool game_is_running = false;
@@ -12,8 +13,8 @@ void sdl_init(const char* title, int w, int h, SDL_Renderer* renderer, SDL_Windo
 
 	// Main SDL Init...
 	SDL_Init(SDL_INIT_EVERYTHING);
-	// TODO (frama): Init IMG
-	// TODO (frama): Init TTF
+	IMG_Init(IMG_INIT_PNG);
+	TTF_Init();
 
 	// Ofcourse we need a window to create...
 	window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, w, h, SDL_WINDOW_OPENGL);
@@ -42,8 +43,8 @@ void sdl_close(SDL_Renderer* renderer, SDL_Window* window) {
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
 
-	// TODO (frama): Quit IMG
-	// TODO (frama): Quit TTF
+	TTF_Quit();
+	IMG_Quit();
 	SDL_Quit();
 }
 
@@ -63,14 +64,13 @@ int main(int argc, char* argv[]) {
 	// Init SDL.
 	SDL_Renderer* renderer = { 0 };
 	SDL_Window* window = { 0 };
-	sdl_init("Desktop Game", 800, 600, renderer, window);
+	sdl_init("Desktop Game", 1280, 720, renderer, window);
 
 	// Game loop.
 	SDL_Event event = { 0 };
 	while (game_is_running) {
 		do_one_frame(renderer, event);
 	}
-
 
 	// Clear all resources.
 	sdl_close(renderer, window);
