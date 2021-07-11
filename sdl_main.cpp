@@ -8,15 +8,17 @@
 #include "string.cpp"
 
 // Defines.
-#define CLIENT_WIDTH 1280
-#define CLIENT_HEIGHT 720
+#define CLIENT_WIDTH 1920
+#define CLIENT_HEIGHT 1080
 
 // Here lies the globals that used in our game.
 global_variable bool game_is_running = false;
 global_variable SDL_Renderer* renderer = { 0 };
 global_variable u64 frequence_counter = 0;
+global_variable TTF_Font* desktop_font = nullptr;
 
 // This is a UNITY build!
+#include "asset_loader.cpp"
 #include "renderer.cpp"
 #include "desktop.cpp"
 #include "game.cpp"
@@ -31,28 +33,40 @@ void init_game(const char* title) {
 
 	// Counters.
 	frequence_counter = SDL_GetPerformanceFrequency();
-	//last_dt = 1.f / (f32)SDL_GetTicks
 
-	// Main SDL Init...
-	SDL_Init(SDL_INIT_EVERYTHING);
-	IMG_Init(IMG_INIT_PNG);
-	TTF_Init();
-
-	// Ofcourse we need a window to create...
-	window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, CLIENT_WIDTH, CLIENT_HEIGHT, SDL_WINDOW_OPENGL);
-	if (window == nullptr) {
-		printf("Failed to create window: %s\n", SDL_GetError());
-		exit(-1);
-	}
-	// And then a renderer where we draw stuff.
-	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE);
-	if (renderer == nullptr) {
-		printf("Failed to create renderer: %s\n", SDL_GetError());
-		exit(-1);
+	// Init SDL libs.
+	{
+		SDL_Init(SDL_INIT_EVERYTHING);
+		IMG_Init(IMG_INIT_PNG);
+		TTF_Init();
 	}
 
-	SDL_RenderSetLogicalSize(renderer, CLIENT_WIDTH, CLIENT_HEIGHT);
-	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, 0);
+	// Init window and renderer.
+	{
+		// Ofcourse we need a window to create...
+		window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, CLIENT_WIDTH, CLIENT_HEIGHT, SDL_WINDOW_VULKAN);
+		if (window == nullptr) {
+			printf("Failed to create window: %s\n", SDL_GetError());
+			exit(-1);
+		}
+		// And then a renderer where we draw stuff.
+		renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
+		if (renderer == nullptr) {
+			printf("Failed to create renderer: %s\n", SDL_GetError());
+			exit(-1);
+		}
+	}
+
+	// Init some stuff...
+	{
+		SDL_RenderSetLogicalSize(renderer, CLIENT_WIDTH, CLIENT_HEIGHT);
+		SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, 0);
+	}
+
+	// Load resources.
+	{
+		desktop_font = load_font("data/fonts/clacon.ttf", 32);
+	}
 
 	game_is_running = true;
 }
@@ -77,6 +91,12 @@ process_events() {
 		if (event.type == SDL_QUIT || event.key.keysym.sym == SDLK_ESCAPE) {
 			game_is_running = false;
 		}
+		else if (event.key.keysym.sym == SDLK_F1) {
+			change_game_mode(GM_MENU);
+		}
+		else if (event.key.keysym.sym == SDLK_F2) {
+			change_game_mode(GM_DESKTOP);
+		}
 	}
 }
 
@@ -84,8 +104,12 @@ internal void
 do_one_frame() {
 	// Start time.
 	u64 start = SDL_GetPerformanceCounter();
+
 	// Events.
 	process_events();
+
+	// Clear renderer.
+	SDL_RenderClear(renderer);
 
 	// Simulation.
 	update_game(last_dt);
@@ -96,6 +120,10 @@ do_one_frame() {
 	// Get frame time.
 	u64 end = SDL_GetPerformanceCounter();
 	last_dt = (end - start) / (f32)frequence_counter;
+
+	/*char buf[80];
+	sprintf_s(buf, "dt = %f.2", last_dt);
+	SDL_SetWindowTitle(window, buf);*/
 }
 
 int main(int argc, char* argv[]) {
