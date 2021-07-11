@@ -20,11 +20,12 @@ global_variable TTF_Font* desktop_font = nullptr;
 // This is a UNITY build!
 #include "asset_loader.cpp"
 #include "renderer.cpp"
-#include "desktop.cpp"
 #include "game.cpp"
 
 // Semi-globals.
 SDL_Window* window = { 0 };
+u64 now_time = SDL_GetPerformanceCounter();
+u64 last_time = 0;
 f32 last_dt = 0;
 
 // Init all the SDL things...
@@ -100,15 +101,17 @@ process_events() {
 	}
 }
 
-internal void 
+internal void
 do_one_frame() {
 	// Start time.
-	u64 start = SDL_GetPerformanceCounter();
+	last_time = now_time;
+	now_time = SDL_GetPerformanceCounter();
 
 	// Events.
 	process_events();
 
-	// Clear renderer.
+	// Clear renderer to black.
+	SDL_SetRenderDrawColor(renderer, 0x0, 0x0, 0x0, 0xFF);
 	SDL_RenderClear(renderer);
 
 	// Simulation.
@@ -119,7 +122,7 @@ do_one_frame() {
 
 	// Get frame time.
 	u64 end = SDL_GetPerformanceCounter();
-	last_dt = (end - start) / (f32)frequence_counter;
+	last_dt = (now_time - last_time) * 1000 / (f32)frequence_counter;
 
 	/*char buf[80];
 	sprintf_s(buf, "dt = %f.2", last_dt);
