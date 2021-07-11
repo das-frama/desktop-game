@@ -3,13 +3,35 @@
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 
-// Here lies the globals that used in our game.
-bool game_is_running = false;
+// This is a UNITY build!
+#include "utils.cpp"
+#include "string.cpp"
 
+// Defines.
+#define CLIENT_WIDTH 1280
+#define CLIENT_HEIGHT 720
+
+// Here lies the globals that used in our game.
+global_variable bool game_is_running = false;
+global_variable SDL_Renderer* renderer = { 0 };
+global_variable u64 frequence_counter = 0;
+
+// This is a UNITY build!
+#include "renderer.cpp"
+#include "desktop.cpp"
+#include "game.cpp"
+
+// Semi-globals.
+SDL_Window* window = { 0 };
+f32 last_dt = 0;
 
 // Init all the SDL things...
-void sdl_init(const char* title, int w, int h, SDL_Renderer* renderer, SDL_Window* window) {
+void init_game(const char* title) {
 	printf("Initializing game...\n");
+
+	// Counters.
+	frequence_counter = SDL_GetPerformanceFrequency();
+	//last_dt = 1.f / (f32)SDL_GetTicks
 
 	// Main SDL Init...
 	SDL_Init(SDL_INIT_EVERYTHING);
@@ -17,7 +39,7 @@ void sdl_init(const char* title, int w, int h, SDL_Renderer* renderer, SDL_Windo
 	TTF_Init();
 
 	// Ofcourse we need a window to create...
-	window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, w, h, SDL_WINDOW_OPENGL);
+	window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, CLIENT_WIDTH, CLIENT_HEIGHT, SDL_WINDOW_OPENGL);
 	if (window == nullptr) {
 		printf("Failed to create window: %s\n", SDL_GetError());
 		exit(-1);
@@ -29,15 +51,14 @@ void sdl_init(const char* title, int w, int h, SDL_Renderer* renderer, SDL_Windo
 		exit(-1);
 	}
 
-	SDL_RenderSetLogicalSize(renderer, w, h);
+	SDL_RenderSetLogicalSize(renderer, CLIENT_WIDTH, CLIENT_HEIGHT);
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, 0);
-	SDL_SetRenderDrawColor(renderer, 51, 102, 152, 255);
 
 	game_is_running = true;
 }
 
 // Quit and clean all things of SDL...
-void sdl_close(SDL_Renderer* renderer, SDL_Window* window) {
+void close_game() {
 	printf("Quiting game...\n");
 
 	SDL_DestroyRenderer(renderer);
@@ -48,32 +69,46 @@ void sdl_close(SDL_Renderer* renderer, SDL_Window* window) {
 	SDL_Quit();
 }
 
-void do_one_frame(SDL_Renderer* renderer, SDL_Event &event) {
+internal void
+process_events() {
 	// Poll events...
+	SDL_Event event = { 0 };
 	while (SDL_PollEvent(&event)) {
 		if (event.type == SDL_QUIT || event.key.keysym.sym == SDLK_ESCAPE) {
 			game_is_running = false;
 		}
 	}
+}
 
-	SDL_RenderClear(renderer);
+internal void 
+do_one_frame() {
+	// Start time.
+	u64 start = SDL_GetPerformanceCounter();
+	// Events.
+	process_events();
+
+	// Simulation.
+	update_game(last_dt);
+
+	// Render.
 	SDL_RenderPresent(renderer);
+
+	// Get frame time.
+	u64 end = SDL_GetPerformanceCounter();
+	last_dt = (end - start) / (f32)frequence_counter;
 }
 
 int main(int argc, char* argv[]) {
 	// Init SDL.
-	SDL_Renderer* renderer = { 0 };
-	SDL_Window* window = { 0 };
-	sdl_init("Desktop Game", 1280, 720, renderer, window);
+	init_game("Desktop Game");
 
 	// Game loop.
-	SDL_Event event = { 0 };
 	while (game_is_running) {
-		do_one_frame(renderer, event);
+		do_one_frame();
 	}
 
 	// Clear all resources.
-	sdl_close(renderer, window);
+	close_game();
 
 	return 0;
 }
