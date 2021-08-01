@@ -66,7 +66,7 @@ void init_game(const char* title) {
 
 	// Load resources.
 	{
-		desktop_font = load_font("data/fonts/clacon.ttf", 32);
+		desktop_font = load_font("data\\fonts\\clacon.ttf", 32);
 	}
 
 	game_is_running = true;
@@ -122,7 +122,7 @@ do_one_frame() {
 
 	// Get frame time.
 	u64 end = SDL_GetPerformanceCounter();
-	last_dt = (now_time - last_time) * 1000 / (f32)frequence_counter;
+	last_dt = (f32) (now_time - last_time) * 1000 / (f32)frequence_counter;
 
 	/*char buf[80];
 	sprintf_s(buf, "dt = %f.2", last_dt);

@@ -24,7 +24,7 @@ int messages_count = sizeof(boot_messages) / sizeof(boot_messages[0]);
 
 inline char*
 dots(const Boot_Message& message) {
-	u8 count = 0;
+	int count = 0;
 	if (message.is_printed) {
 		count = message.time / DOTS_SPEED;
 	} else {
@@ -47,9 +47,9 @@ update_boot(f32 dt) {
 		boot_state.acc += dt;
 
 		auto message = &boot_messages[boot_state.current_message];
-		if (boot_state.acc >= message->time) {
+		if (boot_state.acc >= (float)message->time) {
 			message->is_printed = true;
-			if (boot_state.acc >= message->time + message->delay) {
+			if (boot_state.acc >= (float) message->time + (float) message->delay) {
 				boot_state.acc = 0;
 				boot_state.current_message += 1;
 			}
