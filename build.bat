@@ -1,28 +1,29 @@
 @echo off
 if not exist build mkdir ..\build
 pushd build
+
 del *.pdb > NUL 2> NUL
 echo WAITING FOR PDB > lock.tmp
+
 set warnings_to_ignore=-wd4201 -wd4204 -wd4255 -wd4668 -wd4820 -wd4100 -wd4189 -wd4711 -wd4710 -wd4101 -wd4296 -wd4311 -wd4115 -wd4702 -wd4456 -wd4555
 
 REM Asset Cooker Build
 REM cl -nologo -O2 -Zi -FC -WX -Wall %warnings_to_ignore% ..\code\cooker.c /link user32.lib gdi32.lib -incremental:no -opt:ref
 REM Game Build
 
-REM Copy dlls.
-if not exist SDL2.dll cp "C:\Libs\SDL2\SDL2-2.0.14\lib\x64\SDL2.dll" .
-if not exist SDL2_image.dll cp "C:\Libs\SDL2\SDL2_image-2.0.5\lib\x64\SDL2_image.dll" .
-if not exist SDL2_ttf.dll cp "C:\Libs\SDL2\SDL2_ttf-2.0.15\lib\x64\SDL2_ttf.dll" .
+REM Define lib path.
+set "sdl2=C:\Libs\SDL2\SDL2-2.0.14"
+set "sdl2_image=C:\Libs\SDL2\SDL2_image-2.0.5"
+set "sdl2_ttf=C:\Libs\SDL2\SDL2_ttf-2.0.15"
+set "env=x64"
+
+if not exist SDL2.dll robocopy %sdl2%\lib\%env% . *.dll /NFL /NDL /NJH /NJS /nc /ns /np
+if not exist SDL2_image.dll robocopy %sdl2_image%\lib\%env% . *.dll  /NFL /NDL /NJH /NJS /nc /ns /np
+if not exist SDL2_ttf.dll robocopy %sdl2_ttf%\lib\%env% . *.dll  /NFL /NDL /NJH /NJS /nc /ns /np
 
 cl /Fegame.exe -nologo -O2 -FC %warnings_to_ignore%^
-     ..\source\sdl_main.cpp^
-    /I C:\Libs\SDL2\SDL2-2.0.14\include^
-    /I C:\Libs\SDL2\SDL2_ttf-2.0.15\include^
-    /I C:\Libs\SDL2\SDL2_image-2.0.5\include^
-    /link ^
-    "C:\Libs\SDL2\SDL2-2.0.14\lib\x64\SDL2.lib" "C:\Libs\SDL2\SDL2-2.0.14\lib\x64\SDL2main.lib"^
-    "C:\Libs\SDL2\SDL2_image-2.0.5\lib\x64\SDL2_image.lib"^
-    "C:\Libs\SDL2\SDL2_ttf-2.0.15\lib\x64\SDL2_ttf.lib"^
+     ..\source\sdl_main.cpp /I %sdl2%\include /I %sdl2_image%\include /I %sdl2_ttf%\include^
+    /link %sdl2%\lib\%env%\SDL2.lib %sdl2%\lib\%env%\SDL2main.lib %sdl2_image%\lib\%env%\SDL2_image.lib %sdl2_ttf%\lib\%env%\SDL2_ttf.lib^
     shell32.lib -incremental:no -opt:ref /SUBSYSTEM:CONSOLE
 
 del lock.tmp
