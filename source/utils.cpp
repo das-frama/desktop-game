@@ -25,10 +25,9 @@ typedef bool b8;
 #define internal static
 #define local_persist static
 
-#define KiB(a) (1024LL*(a))
-#define MiB(a) (1024LL*(KiB(a)))
-#define GiB(a) (1024LL*(MiB(a)))
-#define TiB(a) (1024LL*(GiB(a)))
+#define KiB(a) (1024LL * (a))
+#define MiB(a) (1024LL * (KiB(a)))
+#define GiB(a) (1024LL * (MiB(a)))
+#define TiB(a) (1024LL * (GiB(a)))
 
 #define array_count(a) (sizeof(a) / sizeof((a)[0]))
-
