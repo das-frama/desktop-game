@@ -1,9 +1,12 @@
-struct String {
+struct String
+{
   char* data;
   s64 size;
 };
 
-internal bool strings_match(String a, String b) {
+internal bool
+strings_match(String a, String b)
+{
   if (a.size != b.size)
     return false;
 

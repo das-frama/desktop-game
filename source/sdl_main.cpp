@@ -13,7 +13,7 @@
 
 // Here lies the globals that used in our game.
 global_variable bool game_is_running = false;
-global_variable SDL_Renderer* renderer = {0};
+global_variable SDL_Renderer* renderer = { 0 };
 global_variable u64 frequence_counter = 0;
 global_variable TTF_Font* desktop_font = nullptr;
 
@@ -23,13 +23,15 @@ global_variable TTF_Font* desktop_font = nullptr;
 #include "game.cpp"
 
 // Semi-globals.
-SDL_Window* window = {0};
+SDL_Window* window = { 0 };
 u64 now_time = SDL_GetPerformanceCounter();
 u64 last_time = 0;
 f32 last_dt = 0;
 
 // Init all the SDL things...
-void init_game(const char* title) {
+void
+init_game(const char* title)
+{
   printf("Initializing game...\n");
 
   // Counters.
@@ -45,16 +47,19 @@ void init_game(const char* title) {
   // Init window and renderer.
   {
     // Ofcourse we need a window to create...
-    window =
-        SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                         CLIENT_WIDTH, CLIENT_HEIGHT, SDL_WINDOW_VULKAN);
+    window = SDL_CreateWindow(title,
+                              SDL_WINDOWPOS_CENTERED,
+                              SDL_WINDOWPOS_CENTERED,
+                              CLIENT_WIDTH,
+                              CLIENT_HEIGHT,
+                              SDL_WINDOW_OPENGL);
     if (window == nullptr) {
       printf("Failed to create window: %s\n", SDL_GetError());
       exit(-1);
     }
     // And then a renderer where we draw stuff.
     renderer = SDL_CreateRenderer(
-        window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
+      window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
     if (renderer == nullptr) {
       printf("Failed to create renderer: %s\n", SDL_GetError());
       exit(-1);
@@ -68,13 +73,17 @@ void init_game(const char* title) {
   }
 
   // Load resources.
-  { desktop_font = load_font("data\\fonts\\clacon.ttf", 32); }
+  {
+    desktop_font = load_font("data\\fonts\\clacon.ttf", 32);
+  }
 
   game_is_running = true;
 }
 
 // Quit and clean all things of SDL...
-void close_game() {
+void
+close_game()
+{
   printf("Quiting game...\n");
 
   SDL_DestroyRenderer(renderer);
@@ -85,9 +94,11 @@ void close_game() {
   SDL_Quit();
 }
 
-internal void process_events() {
+internal void
+process_events()
+{
   // Poll events...
-  SDL_Event event = {0};
+  SDL_Event event = { 0 };
   while (SDL_PollEvent(&event)) {
     if (event.type == SDL_QUIT || event.key.keysym.sym == SDLK_ESCAPE) {
       game_is_running = false;
@@ -99,7 +110,9 @@ internal void process_events() {
   }
 }
 
-internal void do_one_frame() {
+internal void
+do_one_frame()
+{
   // Start time.
   last_time = now_time;
   now_time = SDL_GetPerformanceCounter();
@@ -120,13 +133,11 @@ internal void do_one_frame() {
   // Get frame time.
   u64 end = SDL_GetPerformanceCounter();
   last_dt = (f32)(now_time - last_time) * 1000 / (f32)frequence_counter;
-
-  /*char buf[80];
-sprintf_s(buf, "dt = %f.2", last_dt);
-SDL_SetWindowTitle(window, buf);*/
 }
 
-int main(int argc, char* argv[]) {
+int
+main(int argc, char* argv[])
+{
   // Init SDL.
   init_game("Desktop Game");
 

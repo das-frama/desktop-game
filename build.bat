@@ -16,14 +16,16 @@ set "sdl2=C:\Libs\SDL2\SDL2-2.0.14"
 set "sdl2_image=C:\Libs\SDL2\SDL2_image-2.0.5"
 set "sdl2_ttf=C:\Libs\SDL2\SDL2_ttf-2.0.15"
 set "env=x64"
+set "source=..\source\sdl_main.cpp"
+set "out=game.exe"
 
 if not exist SDL2.dll robocopy %sdl2%\lib\%env% . *.dll /NFL /NDL /NJH /NJS /nc /ns /np
 if not exist SDL2_image.dll robocopy %sdl2_image%\lib\%env% . *.dll  /NFL /NDL /NJH /NJS /nc /ns /np
 if not exist SDL2_ttf.dll robocopy %sdl2_ttf%\lib\%env% . *.dll  /NFL /NDL /NJH /NJS /nc /ns /np
 
-cl /Fegame.exe -nologo -O2 -FC %warnings_to_ignore%^
-     ..\source\sdl_main.cpp /I %sdl2%\include /I %sdl2_image%\include /I %sdl2_ttf%\include^
-    /link %sdl2%\lib\%env%\SDL2.lib %sdl2%\lib\%env%\SDL2main.lib %sdl2_image%\lib\%env%\SDL2_image.lib %sdl2_ttf%\lib\%env%\SDL2_ttf.lib^
+cl /Fe%out% -nologo -O2 -FC %warnings_to_ignore%^
+    %source% /I %sdl2%\include /I %sdl2_image%\include /I %sdl2_ttf%\include^
+    /link %sdl2%\lib\%env%\SDL2main.lib  %sdl2%\lib\%env%\SDL2.lib %sdl2_image%\lib\%env%\SDL2_image.lib %sdl2_ttf%\lib\%env%\SDL2_ttf.lib^
     shell32.lib -incremental:no -opt:ref /SUBSYSTEM:CONSOLE
 
 del lock.tmp
